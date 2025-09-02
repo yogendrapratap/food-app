@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import java.math.BigDecimal;
 
 public class FoodItemMessage {
+
     private String id;
     private String itemId;
     private String itemName;
