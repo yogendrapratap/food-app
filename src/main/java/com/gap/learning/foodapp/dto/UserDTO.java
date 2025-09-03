@@ -19,6 +19,8 @@ public class UserDTO {
 
     private String password;
 
+    private Role role;
+
     public Long getId() {
         return id;
     }
@@ -88,6 +90,14 @@ public class UserDTO {
 
     public UserDTO setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+    public UserDTO setRole(Role role) {
+        this.role = role;
         return this;
     }
 }
