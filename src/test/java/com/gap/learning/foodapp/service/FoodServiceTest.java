@@ -4,9 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gap.learning.foodapp.dto.CartDTO;
 import com.gap.learning.foodapp.dto.Food;
 import com.gap.learning.foodapp.dto.FoodList;
+import com.gap.learning.foodapp.dto.Role;
+import com.gap.learning.foodapp.dto.User;
 import com.gap.learning.foodapp.exception.ECommerceAPIValidationException;
 import com.gap.learning.foodapp.message.FoodItemMessage;
 import com.gap.learning.foodapp.repository.FoodRepository;
+import com.gap.learning.foodapp.repository.UserRepository;
 import com.gap.learning.foodapp.validator.EcommerceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import org.springframework.kafka.support.SendResult;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,10 +31,10 @@ class FoodServiceTest {
 
     @Mock
     private FoodRepository foodRepository;
-
+    @Mock
+    private UserRepository userRepository;
     @Mock
     private KafkaProducerService kafkaProducerService;
-
     @Mock
     private EcommerceValidator ecommerceValidator;
 
@@ -39,29 +43,26 @@ class FoodServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    // --- search methods ---
     @Test
     void testSearch_Found() {
         Food food = new Food();
-        food.setId("1");
         when(foodRepository.findByItemNameAndVendorId("Pizza", "V1")).thenReturn(food);
 
         Food result = foodService.search("Pizza", "V1");
 
         verify(ecommerceValidator).validate(food);
-        assertEquals("1", result.getId());
+        assertEquals(food, result);
     }
 
     @Test
     void testSearchByIdAndVendorId_Found() {
         Food food = new Food();
-        food.setId("101");
         when(foodRepository.findByIdAndVendorId("101", "V1")).thenReturn(food);
 
         Food result = foodService.searchByIdAndVendorId("101", "V1");
 
         verify(ecommerceValidator).validate(food);
-        assertEquals("101", result.getId());
+        assertEquals(food, result);
     }
 
     @Test
@@ -74,20 +75,37 @@ class FoodServiceTest {
         assertEquals(food, result);
     }
 
-    // --- createFoodMessage ---
     @Test
     void testCreateFoodMessage_Success() throws Exception {
         Food food = new Food();
         food.setItemName("Burger");
         food.setVendorId("V1");
+        User user = new User();
+        user.setRole(Role.VENDOR);
 
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(foodRepository.findByItemNameAndVendorId(food.getItemName(), food.getVendorId())).thenReturn(null);
         when(kafkaProducerService.sendMessageAsync(any(FoodItemMessage.class)))
                 .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
-        String result = foodService.createFoodMessage(food);
+        String result = foodService.createFoodMessage(1L, food);
 
         assertEquals("Message Sent Successfully", result);
+    }
+
+    @Test
+    void testCreateFoodMessage_NotVendor() {
+        Food food = new Food();
+        food.setItemName("Burger");
+        food.setVendorId("V1");
+        User user = new User();
+        user.setRole(Role.CUSTOMER);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        ECommerceAPIValidationException ex = assertThrows(ECommerceAPIValidationException.class,
+                () -> foodService.createFoodMessage(1L, food));
+        assertTrue(ex.getMessage().contains("Only Vendors"));
     }
 
     @Test
@@ -95,11 +113,16 @@ class FoodServiceTest {
         Food food = new Food();
         food.setItemName("Burger");
         food.setVendorId("V1");
+        User user = new User();
+        user.setRole(Role.VENDOR);
 
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(foodRepository.findByItemNameAndVendorId(food.getItemName(), food.getVendorId()))
                 .thenReturn(new Food());
 
-        assertThrows(ECommerceAPIValidationException.class, () -> foodService.createFoodMessage(food));
+        ECommerceAPIValidationException ex = assertThrows(ECommerceAPIValidationException.class,
+                () -> foodService.createFoodMessage(1L, food));
+        assertTrue(ex.getMessage().contains("already exists"));
     }
 
     @Test
@@ -107,18 +130,20 @@ class FoodServiceTest {
         Food food = new Food();
         food.setItemName("Pizza");
         food.setVendorId("V1");
+        User user = new User();
+        user.setRole(Role.VENDOR);
 
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(foodRepository.findByItemNameAndVendorId(food.getItemName(), food.getVendorId())).thenReturn(null);
         CompletableFuture<SendResult<String,String>> future = new CompletableFuture<>();
         future.completeExceptionally(new RuntimeException("Kafka failed"));
         when(kafkaProducerService.sendMessageAsync(any(FoodItemMessage.class))).thenReturn(future);
 
-        String result = foodService.createFoodMessage(food);
+        String result = foodService.createFoodMessage(1L, food);
 
         assertEquals("Message Send Failed...", result);
     }
 
-    // --- createFood ---
     @Test
     void testCreateFood_Success() {
         Food food = new Food();
@@ -145,47 +170,70 @@ class FoodServiceTest {
         assertThrows(ECommerceAPIValidationException.class, () -> foodService.createFood(food));
     }
 
-    // --- updateFoodMessage ---
     @Test
     void testUpdateFoodMessage_Success() throws Exception {
         Food food = new Food();
         food.setItemName("Pasta");
+        User user = new User();
+        user.setRole(Role.VENDOR);
 
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
         when(foodRepository.findByItemName(food.getItemName())).thenReturn(food);
         when(kafkaProducerService.sendMessageAsync(any(FoodItemMessage.class)))
                 .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
-        String result = foodService.updateFoodMessage(food);
+        String result = foodService.updateFoodMessage(2L, food);
 
         assertEquals("Message Sent Successfully", result);
+    }
+
+    @Test
+    void testUpdateFoodMessage_NotVendor() {
+        Food food = new Food();
+        food.setItemName("Pasta");
+        User user = new User();
+        user.setRole(Role.CUSTOMER);
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
+
+        ECommerceAPIValidationException ex = assertThrows(ECommerceAPIValidationException.class,
+                () -> foodService.updateFoodMessage(2L, food));
+        assertTrue(ex.getMessage().contains("Only Vendors"));
     }
 
     @Test
     void testUpdateFoodMessage_NotExists() {
         Food food = new Food();
         food.setItemName("Pasta");
+        User user = new User();
+        user.setRole(Role.VENDOR);
 
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
         when(foodRepository.findByItemName(food.getItemName())).thenReturn(null);
 
-        assertThrows(ECommerceAPIValidationException.class, () -> foodService.updateFoodMessage(food));
+        ECommerceAPIValidationException ex = assertThrows(ECommerceAPIValidationException.class,
+                () -> foodService.updateFoodMessage(2L, food));
+        assertTrue(ex.getMessage().contains("not exists"));
     }
 
     @Test
     void testUpdateFoodMessage_KafkaFail() throws Exception {
         Food food = new Food();
         food.setItemName("Pasta");
+        User user = new User();
+        user.setRole(Role.VENDOR);
 
+        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
         when(foodRepository.findByItemName(food.getItemName())).thenReturn(food);
         CompletableFuture<SendResult<String,String>> future = new CompletableFuture<>();
         future.completeExceptionally(new RuntimeException("Kafka failed"));
         when(kafkaProducerService.sendMessageAsync(any(FoodItemMessage.class))).thenReturn(future);
 
-        String result = foodService.updateFoodMessage(food);
+        String result = foodService.updateFoodMessage(2L, food);
 
         assertEquals("Message Send Failed...", result);
     }
 
-    // --- updateFood ---
     @Test
     void testUpdateFood_Success() throws Exception {
         Food food = new Food();
@@ -209,7 +257,6 @@ class FoodServiceTest {
         assertThrows(ECommerceAPIValidationException.class, () -> foodService.updateFood(food));
     }
 
-    // --- searchProductListForCart ---
     @Test
     void testSearchProductListForCart() {
         CartDTO cart1 = new CartDTO("101", null, "V1", 2);

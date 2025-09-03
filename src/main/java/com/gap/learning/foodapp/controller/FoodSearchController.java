@@ -26,19 +26,13 @@ public class FoodSearchController {
     }
 
     @PostMapping("create-food")
-    public String createFood(@RequestBody Food food) throws JsonProcessingException {
-        logger.info("Creating food: {}", food);
-        String message = foodService.createFoodMessage(food);
-        logger.info("Create food message: {}", message);
-        return foodService.createFoodMessage(food);
+    public String createFood(@RequestParam("userId") Long userId, @RequestBody Food food) throws JsonProcessingException {
+        return foodService.createFoodMessage(userId,food);
     }
 
     @PutMapping("update-food")
-    public String updateFood(@RequestBody Food food) throws JsonProcessingException {
-        logger.info("Updating food: {}", food);
-        String message = foodService.updateFoodMessage(food);
-        logger.info("Update food message: {}", message);
-        return foodService.updateFoodMessage(food);
+    public String updateFood(@RequestParam("userId") Long userId, @RequestBody Food food) throws JsonProcessingException {
+        return foodService.updateFoodMessage(userId,food);
     }
 
 }
