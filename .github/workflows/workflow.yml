@@ -18,4 +18,4 @@ jobs:
           run: docker pull yogendrapratap/foodapp:1.0
 
         - name: Run Image
-          run: docker run -d -p 8099:8080 yogendrapratap/sample-app-image:1.0
+          run: docker run -d -p 8099:8080 yogendrapratap/foodapp:1.0
