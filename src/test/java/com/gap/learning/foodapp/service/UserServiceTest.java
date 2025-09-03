@@ -1,4 +1,4 @@
-package com.gap.learning.foodapp.servicestest;
+package com.gap.learning.foodapp.service;
 
 import com.gap.learning.foodapp.dto.User;
 import com.gap.learning.foodapp.dto.UserDTO;

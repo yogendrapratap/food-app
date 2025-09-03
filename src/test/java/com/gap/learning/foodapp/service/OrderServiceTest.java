@@ -1,14 +1,10 @@
-package com.gap.learning.foodapp.servicestest;
+package com.gap.learning.foodapp.service;
 
 import com.gap.learning.foodapp.dto.*;
 import com.gap.learning.foodapp.feignclient.BankAppClient;
 import com.gap.learning.foodapp.feignclient.FundTransferResponseDTO;
 import com.gap.learning.foodapp.feignclient.UserFundTransferDTO;
 import com.gap.learning.foodapp.repository.OrderRepository;
-import com.gap.learning.foodapp.service.CartService;
-import com.gap.learning.foodapp.service.KafkaProducerService;
-import com.gap.learning.foodapp.service.OrderService;
-import com.gap.learning.foodapp.service.UserService;
 import com.gap.learning.foodapp.validator.EcommerceValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

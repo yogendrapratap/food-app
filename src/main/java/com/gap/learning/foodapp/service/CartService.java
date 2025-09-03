@@ -2,7 +2,6 @@ package com.gap.learning.foodapp.service;
 
 import com.gap.learning.foodapp.dto.CartDTO;
 import com.gap.learning.foodapp.dto.CartListDTO;
-import com.gap.learning.foodapp.dto.Food;
 import com.gap.learning.foodapp.dto.FoodList;
 import com.gap.learning.foodapp.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
