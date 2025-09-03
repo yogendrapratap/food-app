@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: food-app-image
+  labels:
+    app: food-app-image
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: food-app-image
+  template:
+    metadata:
+      labels:
+        app: food-app-image
+    spec:
+      containers:
+        - name: sample-app-image
+          image: yogendrapratap/foodapp:1.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: mongodb://localhost:27017/food-app-db
