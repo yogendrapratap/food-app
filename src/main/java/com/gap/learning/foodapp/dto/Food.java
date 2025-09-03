@@ -1,4 +1,4 @@
-package com.gap.learning.foodapp.response;
+package com.gap.learning.foodapp.dto;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,15 +9,13 @@ import java.math.BigDecimal;
 public class Food {
     @Id
     private String id;
-
     private String itemId;
     private String itemName;
-
     private String vendorId;
     private String vendorName;
-
     private BigDecimal price;
     private Boolean isAvailable;
+    private Integer quantity;
 
     public String getId() {
         return id;
@@ -79,6 +77,15 @@ public class Food {
 
     public Food setAvailable(Boolean available) {
         isAvailable = available;
+        return this;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public Food setQuantity(Integer quantity) {
+        this.quantity = quantity;
         return this;
     }
 }
