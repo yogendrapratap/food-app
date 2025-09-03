@@ -1,0 +1,40 @@
+name: workflow
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Step 1: Checkout the repository (assuming bank app source is here)
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Docker Login (optional if pushing images; required for pulling private images)
+      - name: Docker Login
+        uses: docker/login-action@v2
+        with:
+          username: yogendrapratap
+          password: Naitik@29
+
+      # Step 3: Pull Image for FoodApp (external image)
+      - name: Pull FoodApp Image
+        run: docker pull yogendrapratap/foodapp:1.0
+
+      # Step 4: Build the BankApp image (from your Dockerfile)
+      - name: Build BankApp Image
+        run: docker build -t bankapp:1.0 .
+
+      # Step 5: Create custom bridge network
+      - name: Create Docker Network
+        run: docker network create --driver bridge app-network
+
+      # Step 6: Run FoodApp container on custom network
+      - name: Run FoodApp Container
+        run: docker run -d --network app-network --name foodapp -p 8099:8080 yogendrapratap/foodapp:1.0
+
+      # Step 7: Run BankApp container on custom network
+      - name: Run BankApp Container
+        run: docker run -d --network app-network --name bankapp -p 8098:8080 bankapp:1.0
