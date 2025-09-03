@@ -15,5 +15,13 @@ jobs:
         - name: Pull Image
           run: docker pull yogendrapratap/foodapp:1.0
 
-        - name: Run Image
-          run: docker run -d -p 8099:8080 yogendrapratap/foodapp:1.0
+        - name: Set Up Minikube (Local Testing)
+          run: |
+            minikube start
+            kubectl config use-context minikube
+
+        - name: Deploy to Minikube
+          run: |
+            kubectl apply -f k8s/deployment.yml
+            kubectl apply -f k8s/service.yml
+
