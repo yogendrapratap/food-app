@@ -25,6 +25,10 @@ public class EcommerceValidator {
         if (food == null) {
             throw new ECommerceAPIValidationException("Food Item not found");
         }
+
+        if(food.getAvailable() == null || !food.getAvailable()) {
+            throw new ECommerceAPIValidationException("Food Item is not available");
+        }
     }
 }
 
