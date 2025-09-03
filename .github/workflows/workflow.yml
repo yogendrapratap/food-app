@@ -14,9 +14,8 @@ jobs:
           with:
               username: yogendrapratap
               password: Naitik@29
-        - name: Setup Java JDK
-          uses: actions/setup-java@v3.14.1
-          with:
-              java-version: 17
-              distribution: 'microsoft'
-              cache: 'maven'
+        - name: Pull Image
+          run: docker pull yogendrapratap/foodapp:1.0
+
+        - name: Run Image
+          run: docker run -d -p 8099:8080 yogendrapratap/sample-app-image:1.0
