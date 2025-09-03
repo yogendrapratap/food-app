@@ -1,0 +1,21 @@
+name: workflow
+on:
+  workflow_dispatch
+
+jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+        - name: Docker Login
+          uses: docker/login-action@v2
+          with:
+              username:
+              password:
+        - name: Setup Java JDK
+          uses: actions/setup-java@v3.14.1
+          with:
+              java-version: 17
+              distribution: 'microsoft'
+              cache: 'maven'
