@@ -2,21 +2,22 @@ version: "3.9"
 
 services:
   eureka:
-    image: netflixoss/eureka:1.4.12   # or your custom Eureka server image
+    image: yogendrapratap/eureka-server:1.0  # Consider building your own
     container_name: eureka-server
     ports:
       - "8761:8761"
     restart: always
+
   food-app:
     image: yogendrapratap/foodapp:1.0
     container_name: foodapp-container
     ports:
-      - "8080:8080"
+      - "8095:8095"  # Match SERVER_PORT
     environment:
       SPRING_APPLICATION_NAME: food-app
       SERVER_PORT: 8095
       SERVER_SERVLET_CONTEXT_PATH: /foodapp
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
       SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/food-app-db
       SPRING_KAFKA_TOPIC: food-topic
@@ -37,15 +38,15 @@ services:
     restart: always
 
   mongo:
-      image: mongo:6.0.5-jammy
-      container_name: foodapp-mongo-container
-      ports:
-          - "27017:27017"
-      environment:
-        MONGO_INITDB_DATABASE: food-app-db
-      volumes:
-        - mongo_data:/data/db
-      restart: always
+    image: mongo:6.0.5-jammy
+    container_name: foodapp-mongo-container
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: food-app-db
+    volumes:
+      - mongo_data:/data/db
+    restart: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -53,29 +54,30 @@ services:
     ports:
       - "2181:2181"
     environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-        ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     restart: always
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: foodapp-kafka-container
     ports:
-      - "9092:9092""
+      - "9092:9092"
+      - "29092:29092"
     environment:
-        KAFKA_BROKER_ID: 1
-        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
-        - zookeeper
+      - zookeeper
     restart: always
 
 volumes:
   mongo_data:
 
-
-
-
+networks:
+  default:
+    name: foodapp-network
