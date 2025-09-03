@@ -11,9 +11,9 @@ import java.time.LocalDate;
 @Document(collection = "users")
 public class User {
 
-        @Id
-        @Field("id")
-        private Long id;
+		@Id
+	    //@Field("id")
+	    private Long id;
 
         @Field("first_name")
         private String firstName;
@@ -35,17 +35,22 @@ public class User {
 
         @Field("password")
         private String password;
+        
+        @Field("role")
+        private Role role;
+    
 
-    public User() {
+	public User() {
     }
 
-    public User(Long id, String firstName, String lastName, LocalDate dateOfBirth, String phoneNumber, String address) {
+    public User(Long id, String firstName, String lastName, LocalDate dateOfBirth, String phoneNumber, String address, Role role) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.dateOfBirth = dateOfBirth;
         this.phoneNumber = phoneNumber;
         this.address = address;
+        this.role = role;
     }
 
     public Long getId() {
@@ -119,5 +124,13 @@ public class User {
         this.password = password;
         return this;
     }
+    
+    public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
 
 }
